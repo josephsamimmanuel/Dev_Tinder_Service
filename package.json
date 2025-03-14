@@ -1,0 +1,21 @@
+{
+  "name": "dev_tinder_service",
+  "version": "1.0.0",
+  "description": "The Tinder App for connecting with developers",
+  "main": "app.js",
+  "scripts": {
+    "start": "node src/homework.js",
+    "dev": "nodemon src/homework.js"
+  },
+  "keywords": [
+    "node",
+    "js",
+    "mongoDB"
+  ],
+  "author": "Joseph Sam Immanuel",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.21.2",
+    "nodemon": "^3.1.9"
+  }
+}
