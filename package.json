@@ -4,8 +4,8 @@
   "description": "The Tinder App for connecting with developers",
   "main": "app.js",
   "scripts": {
-    "start": "node src/homework.js",
-    "dev": "nodemon src/homework.js"
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js"
   },
   "keywords": [
     "node",
