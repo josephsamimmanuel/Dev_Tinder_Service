@@ -81,19 +81,36 @@ app.delete('/delete', async (req, res) =>{
   }
 })
 
-app.patch('/update', async (req, res) => {
+app.patch('/update/:userId', async (req, res) => {
   try {
     // Get user id from the request body
-    const id = req.body._id
+    // const id = req.body.userId
+    const id = req.params.userId
+    console.log(req.body);
+    
+    // ALLOWED UPDATES
+    const ALLOWED_UPDATES = ['photoUrl', 'about', 'gender', 'age', 'skills'] 
+    const isUpdateAllowed = Object.keys(req.body).every((update) => {
+      console.log('Request Fields', Object.keys(req.body), 'Allowed Updates', ALLOWED_UPDATES)
+      return ALLOWED_UPDATES.includes(update)
+    })
+    console.log('Is update allowed:', isUpdateAllowed)
+    if(!isUpdateAllowed) {
+      return res.status(400).send('Update not allowed for these fields!')
+    }
+    if(req.body?.skills.length>10) {
+      return res.status(400).send('Skills should be less than 10')
+    }
     // Find the user by id and update it
     const user = await User.findByIdAndUpdate
-    (id, req.body, {new: true}, {runValidators: true})
+    (id, req.body, {new: true, runValidators: true})
     if(!user) {
       res.status(404).send('User not found')
     }
     else {
       res.send('User updated successfully')
     }
+    
   }
   catch (error) {
     res.status(500).send('Error updating user from database', error)
