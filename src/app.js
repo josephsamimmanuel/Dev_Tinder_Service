@@ -27,7 +27,9 @@ app.get('/feed', async (req, res) => {
   try {
     // Get user email from the request body
     const userEmail = req.body.emailId
-    console.log('User email:', userEmail)
+    const id = req.body._id
+
+    console.log('User email:', userEmail, id)
 
     // Fetch all the users from the database
     // const users = await User.find({emailId: userEmail})
@@ -35,7 +37,7 @@ app.get('/feed', async (req, res) => {
     
     // Fetch all the users from the database
     const user = await User
-      .findOne({ emailId: userEmail })
+      .findOne({ emailId: userEmail , _id: id })
     console.log('Users:', user)
     // Send the users as a response to the client
     if (user.length === 0) {
@@ -52,18 +54,51 @@ app.get('/feed', async (req, res) => {
 app.get('/users', async (req, res) => {
   try {
     const emailId = req.body.emailId
-    console.log('User email:', emailId)
     // Fetch all the users from the database
     const users = await User.find({})
-    console.log('Users:', users)
     // Send the users as a response to the client
     res.send(users)
   }
   catch (error) {
     res.status(500).send('Error fetching users from database', error)
   }
-}
-)
+})
+
+app.delete('/delete', async (req, res) =>{
+  try {
+    // Get user id from the request body
+    const id = req.body._id
+    // Find the user by id and delete it
+    const user = await User.findByIdAndDelete(id)
+    if(!user) {
+      res.status(404).send('User not found')
+    }else {
+      res.send('User deleted successfully')
+      }
+  }
+  catch (error) {
+    res.status(500).send('Error deleting user from database', error)
+  }
+})
+
+app.patch('/update', async (req, res) => {
+  try {
+    // Get user id from the request body
+    const id = req.body._id
+    // Find the user by id and update it
+    const user = await User.findByIdAndUpdate
+    (id, req.body, {new: true})
+    if(!user) {
+      res.status(404).send('User not found')
+    }
+    else {
+      res.send('User updated successfully')
+    }
+  }
+  catch (error) {
+    res.status(500).send('Error updating user from database', error)
+  }
+  })
 
 connectDB().then(() => {
   console.log('Connected to MongoDB');
