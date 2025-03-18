@@ -5,19 +5,32 @@ const mongoose = require('mongoose');
 const userSchema = new mongoose.Schema({
     firstName: {
         type: String,
-        required: true
+        required: true,
+        minlength: 5,
+        maxlength: 20
     },
     lastName: {
         type: String,
-        required: true
+        // required: true   Data Sanitization is not required
     },
     age: {
         type: Number,
-        required: true
+        required: true,
+        min: 18,
+        max: 65
     },
     emailId: {
         type: String,
-        required: true
+        lowercase: true,
+        required: true,
+        unique: true,
+        validate: {
+            validator: function(email) {
+                return /^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+$/.test(email);
+            },
+            message: props => `${props.value} is not a valid email id`
+        },
+        trim: true,
     },
     password: {
         type: String,
@@ -25,9 +38,26 @@ const userSchema = new mongoose.Schema({
     },
     gender: {
         type: String,
-        required: true
-    }
-});
+        validate: {
+            validator: function(gender) {
+                if(!["male", "female", "others"].includes(gender.toLowerCase())) {
+                    throw new Error("Gender should be valid")
+                }
+            }
+        },
+    },
+    photoUrl: {
+        type: String,
+        default: 'https://www.gravatar.com/avatar/205e460b479e2e5b48aec07710c08d50?s=200'     
+    },
+    about: {
+        type: String,
+        default: 'Hey there! I am using WhatsApp'
+    },
+    skills: {
+        type: Array,
+    },
+}, {timestamps: true});
 
 const User = mongoose.model('User', userSchema);
 module.exports = User;
