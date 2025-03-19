@@ -2,15 +2,33 @@ const express = require('express')
 const connectDB = require('./config/database')
 const app = express()
 const User = require('./models/user')
+const { validateSignupData } = require('./utils/validation')
+const bcrypt = require('bcrypt')
 
 // To parse the incoming requests with JSON payloads
 app.use(express.json())
 
 app.post('/signup', async (req, res) => {
   console.log('Request received', req.body)
+
   try {
-    // Create a new user instance from the User model
-    const user = new User(req.body)
+    const { firstName, lastName, emailId, password } = req.body
+
+    // VALIDATION OF REQUEST BODY
+    validateSignupData(req)
+
+    // ENCRYPT PASSWORD
+    const passwordHash = await bcrypt.hash(password, 10)
+    console.log(passwordHash)
+    req.body.password = passwordHash
+
+    // CREATE INSTANCE OF USER MODEL
+    const user = new User({
+      firstName,
+      lastName,
+      emailId,
+      password: passwordHash,
+    })
     // Save the user to the database
     await user.save()
     // Send a success response to the client
@@ -18,7 +36,7 @@ app.post('/signup', async (req, res) => {
   } catch (error) {
     // Send an error response if something
     // went wrong while creating the user
-    res.status(400).send('Error creating user' + error)
+    res.status(400).send('new' + error)
   }
 });
 
@@ -34,10 +52,10 @@ app.get('/feed', async (req, res) => {
     // Fetch all the users from the database
     // const users = await User.find({emailId: userEmail})
     // Fetch user using findOne - returns the first user that matches the query
-    
+
     // Fetch all the users from the database
     const user = await User
-      .findOne({ emailId: userEmail , _id: id })
+      .findOne({ emailId: userEmail, _id: id })
     console.log('Users:', user)
     // Send the users as a response to the client
     if (user.length === 0) {
@@ -64,17 +82,17 @@ app.get('/users', async (req, res) => {
   }
 })
 
-app.delete('/delete', async (req, res) =>{
+app.delete('/delete', async (req, res) => {
   try {
     // Get user id from the request body
     const id = req.body._id
     // Find the user by id and delete it
     const user = await User.findByIdAndDelete(id)
-    if(!user) {
+    if (!user) {
       res.status(404).send('User not found')
-    }else {
+    } else {
       res.send('User deleted successfully')
-      }
+    }
   }
   catch (error) {
     res.status(500).send('Error deleting user from database', error)
@@ -87,35 +105,35 @@ app.patch('/update/:userId', async (req, res) => {
     // const id = req.body.userId
     const id = req.params.userId
     console.log(req.body);
-    
+
     // ALLOWED UPDATES
-    const ALLOWED_UPDATES = ['photoUrl', 'about', 'gender', 'age', 'skills'] 
+    const ALLOWED_UPDATES = ['photoUrl', 'about', 'gender', 'age', 'skills']
     const isUpdateAllowed = Object.keys(req.body).every((update) => {
       console.log('Request Fields', Object.keys(req.body), 'Allowed Updates', ALLOWED_UPDATES)
       return ALLOWED_UPDATES.includes(update)
     })
     console.log('Is update allowed:', isUpdateAllowed)
-    if(!isUpdateAllowed) {
+    if (!isUpdateAllowed) {
       return res.status(400).send('Update not allowed for these fields!')
     }
-    if(req.body?.skills.length>10) {
+    if (req.body?.skills.length > 10) {
       return res.status(400).send('Skills should be less than 10')
     }
     // Find the user by id and update it
     const user = await User.findByIdAndUpdate
-    (id, req.body, {new: true, runValidators: true})
-    if(!user) {
+      (id, req.body, { new: true, runValidators: true })
+    if (!user) {
       res.status(404).send('User not found')
     }
     else {
       res.send('User updated successfully')
     }
-    
+
   }
   catch (error) {
     res.status(500).send('Error updating user from database', error)
   }
-  })
+})
 
 connectDB().then(() => {
   console.log('Connected to MongoDB');
