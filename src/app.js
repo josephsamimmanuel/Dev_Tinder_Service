@@ -8,17 +8,18 @@ const bcrypt = require('bcrypt')
 // To parse the incoming requests with JSON payloads
 app.use(express.json())
 
+// signup API - POST/signup - create a new user
 app.post('/signup', async (req, res) => {
   console.log('Request received', req.body)
 
   try {
-    const { firstName, lastName, emailId, password } = req.body
+    const { firstName, lastName, emailId, password, age, gender } = req.body
 
     // VALIDATION OF REQUEST BODY
     validateSignupData(req)
 
     // ENCRYPT PASSWORD
-    const passwordHash = await bcrypt.hash(password, 10)
+    const passwordHash = await bcrypt.hash(password, 8)
     console.log(passwordHash)
     req.body.password = passwordHash
 
@@ -27,6 +28,8 @@ app.post('/signup', async (req, res) => {
       firstName,
       lastName,
       emailId,
+      age,
+      gender,
       password: passwordHash,
     })
     // Save the user to the database
@@ -39,6 +42,35 @@ app.post('/signup', async (req, res) => {
     res.status(400).send('new' + error)
   }
 });
+
+// login API - POST/login - login user
+  app.post('/login', async (req, res) => {
+    console.log('Request received', req.body)
+    try {
+      const { emailId, password } = req.body
+
+      //CREATE INSTANCE OF USER MODEL
+      const user = await User
+        .findOne({ emailId })
+      if (!user) {
+        return res.status(404).send('User not found')
+      }
+      // Compare the password
+      console.log('User:', user.password, 'Password:', password);
+      
+      const isMatch = await bcrypt.compare(password.trim(), user.password.trim());
+      console.log('Is match:', isMatch);
+      
+      if (!isMatch) {
+        return res.status(400).send('Invalid credentials')
+      }
+      // Send a success response to the client
+      res.send('User logged in successfully')
+    } catch (error) {
+      // Send an error response if something went wrong while logging in
+      res.status(400).send('Error logging in user')
+    }
+  });
 
 // Feed API - GET/feed -get all the users from the database
 app.get('/feed', async (req, res) => {
