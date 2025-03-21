@@ -1,7 +1,7 @@
 // Create User Schema and User Models
 
-const mongoose = require('mongoose');
-var validator = require('validator');
+const mongoose = require('mongoose');   // npm install mongoose
+var validator = require('validator');   // npm install validator
 
 const userSchema = new mongoose.Schema({
     firstName: {
