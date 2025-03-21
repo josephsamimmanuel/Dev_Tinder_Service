@@ -67,7 +67,7 @@ app.post('/login', async (req, res) => {
     // Compare the password
     console.log('User:', user.password, 'Password:', password);
 
-    const isMatch = await bcrypt.compare(password.trim(), user.password.trim());
+    const isMatch = await user.validatePassword(password)
     console.log('Is match:', isMatch);
 
     if (!isMatch) {
@@ -75,11 +75,14 @@ app.post('/login', async (req, res) => {
     }
 
     // Create a JWT token
-    const token = await jwt.sign({ _id: user._id }, 'devtinder@312', { expiresIn: '1h' })
+    const token = await user.getJWT()
     console.log('Token:', token)
 
     // Add the token to cookies and send the response to the client
-    res.cookie("token", token)
+    res.cookie("token", token, {
+      httpOnly: true,
+      maxAge: 3600000 // 1 hour in milliseconds
+    })
 
     // Send a success response to the client
     res.send('User logged in successfully')
