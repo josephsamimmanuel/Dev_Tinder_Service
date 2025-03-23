@@ -1,6 +1,7 @@
 const express = require('express');
 const { userAuth } = require('../middleware/auth');
 const User = require('../models/user');
+const { validateUpdateProfileData, validateUpdatePasswordData } = require('../utils/validation');
 
 const profileRouter = express.Router()
 
@@ -25,22 +26,55 @@ profileRouter.get('/profile/view', userAuth, async (req, res) => {
 profileRouter.patch('/profile/update', userAuth, async (req, res) => {
     try {
       // Validate the request body
-      validateUpdateProfileData(req)
+      if(!validateUpdateProfileData(req)) {
+        return res.status(400).send('These fields are not allowed to be updated')
+      }
       const user = req.user
       console.log('User:', user)
       const { firstName, lastName, age, gender, photoUrl, about, skills } = req.body
+      // Update the user profile
       const updatedUser = await User.findByIdAndUpdate(user._id, { firstName, lastName, age, gender, photoUrl, about, skills }, { new: true }, { runValidators: true })
       if (!updatedUser) {
         return res.status(404).send('User not found')
       }
       // Send the updated user as a response to the client
       console.log('Updated user:', updatedUser)
-      res.send(updatedUser)
+      res.send({
+        message: 'User profile updated successfully',
+        data: updatedUser
+      })
 
     } catch (error) {
       // Send an error response if something went wrong
       res.status(500).send('Error updating user profile'+ error)
     }
   });
+
+  // Profile API - PATCH/profile/password - update user password
+profileRouter.patch('/profile/password', userAuth, async (req, res) => {
+    try {
+      const user = req.user
+      const { password } = req.body
+      if(!validateUpdatePasswordData(req)) {
+        return res.status(400).send('Invalid password')
+      }
+      // ENCRYPT PASSWORD
+      const passwordHash = await bcrypt.hash(password, 6)
+      req.body.password = passwordHash
+      // Update the user password
+      const updatedUser = await User.findByIdAndUpdate(user._id, { password: passwordHash }, { new: true }, { runValidators: true })
+      if (!updatedUser) {
+        return res.status(404).send('User not found')
+      }
+      res.send({
+        message: 'User password updated successfully',
+        data: updatedUser
+      })
+    } catch (error) {
+      // Send an error response if something went wrong
+      res.status(500).send('Error updating user password'+ error)
+    }
+  })
+
 
   module.exports = profileRouter

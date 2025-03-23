@@ -2,6 +2,7 @@ const express = require('express');
 const User = require('../models/user');
 const { validateSignupData } = require('../utils/validation');
 const bcrypt = require('bcrypt');
+const { userAuth } = require('../middleware/auth');
 
 const authRouter = express.Router()
 
@@ -16,7 +17,7 @@ authRouter.post('/signup', async (req, res) => {
       validateSignupData(req)
   
       // ENCRYPT PASSWORD
-      const passwordHash = await bcrypt.hash(password, 8)
+      const passwordHash = await bcrypt.hash(password, 6)
       console.log(passwordHash)
       req.body.password = passwordHash
   
@@ -47,6 +48,7 @@ authRouter.post('/signup', async (req, res) => {
 authRouter.post('/login', async (req, res) => {
     console.log('Request received', req.body)
     try {
+      const userDetails = req.user
       const { emailId, password } = req.body
   
       //CREATE INSTANCE OF USER MODEL
@@ -77,7 +79,10 @@ authRouter.post('/login', async (req, res) => {
       })
   
       // Send a success response to the client
-      res.send('User logged in successfully')
+      res.send({
+        message: 'User logged in successfully',
+        data: userDetails
+      })
     } catch (error) {
       // Send an error response if something went wrong while logging in
       res.status(400).send('Error logging in user')
