@@ -25,6 +25,7 @@ profileRouter.get('/profile/view', userAuth, async (req, res) => {
   // Profile API - PUT/profile/update - update user profile
 profileRouter.patch('/profile/update', userAuth, async (req, res) => {
     try {
+      console.log('req.body', req.body)
       // Validate the request body
       if(!validateUpdateProfileData(req)) {
         return res.status(400).send('These fields are not allowed to be updated')
@@ -34,11 +35,11 @@ profileRouter.patch('/profile/update', userAuth, async (req, res) => {
       const { firstName, lastName, age, gender, photoUrl, about, skills } = req.body
       // Update the user profile
       const updatedUser = await User.findByIdAndUpdate(user._id, { firstName, lastName, age, gender, photoUrl, about, skills }, { new: true }, { runValidators: true })
+      console.log('updatedUser', updatedUser)
       if (!updatedUser) {
         return res.status(404).send('User not found')
       }
       // Send the updated user as a response to the client
-      console.log('Updated user:', updatedUser)
       res.send({
         message: 'User profile updated successfully',
         data: updatedUser

@@ -59,12 +59,62 @@ requestRouter.post('/request/send/:status/:userId', userAuth, async (req, res) =
     })
     const data = await connectionRequest.save()
     res.status(201).json({
-      message: req.user.firstName + ' sends ' + status + ' request to ' + toUser.firstName,
+      message: 'You send ' + status + ' request to ' + toUser.firstName,
       connectionRequest: data
     })
   }
   catch (error) {
     res.status(500).send({message: error.message || 'Error sending connection request'})
+  }
+})
+
+// Accepting a connection Request API - POST/request/accept/:userId - accept a connection request
+// Rejecting a connection Request API - POST/request/reject/:userId - reject a connection request
+requestRouter.post('/request/review/:status/:requestId', userAuth, async (req, res) => {
+  try{
+    const user = req.user
+    const fromUserId = req.user._id
+    const status = req.params.status
+    const requestId = req.params.requestId
+
+
+    // User 1 sends a request to User 2
+    // logged in user is User 2 must accept or reject the request
+    // status = interested
+    // status must be accepted or rejected
+    // if status is accepted, then add the users to the friends list
+    // if status is rejected, then remove the request from the connection request list
+    // check if the request Id is valid
+
+    const allowedStatus = ['accepted', 'rejected']
+    if (!allowedStatus.includes(status)) {
+      return res.status(400).json({
+        message: 'Invalid status ' + status
+      })
+    }
+
+    // check if the request Id is valid
+    const connectionRequest = await ConnectionRequestModel.findOne({
+      _id: requestId,
+      toUserId: fromUserId,  // User 2 is the logged in user
+      status: 'interested'
+    })
+    console.log('connectionRequest', connectionRequest)
+    if (!connectionRequest) {
+      return res.status(400).json({
+        message: 'Connection request not found'
+      })
+    }
+
+    connectionRequest.status = status
+    const data = await connectionRequest.save()
+    res.status(200).json({
+      message: 'Connection request ' + status,
+      connectionRequest: data
+    })
+  }
+  catch (error) {
+    res.status(500).send({message: error.message || 'Error accepting/rejecting connection request'})
   }
 })
 
