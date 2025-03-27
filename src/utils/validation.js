@@ -32,7 +32,7 @@ const validateUpdateProfileData = (req) => {
 };
 
 const validateUpdatePasswordData = async (req) => {
-    const { password } = req.body
+    const { password, confirmPassword } = req.body
     const user = req.user
     const isPasswordMatch = await bcrypt.compare(password, user.password)
     if(isPasswordMatch) {
@@ -40,6 +40,10 @@ const validateUpdatePasswordData = async (req) => {
     }
     if(!password) {
         throw new Error('Password is required')
+    }
+    // check if new password is the same as confirm password
+    if(password !== confirmPassword) {
+        throw new Error('New password and confirm password do not match')
     }
     if(!validator.isStrongPassword(password)) {
         throw new Error('Password is not strong')

@@ -79,9 +79,10 @@ authRouter.post('/login', async (req, res) => {
       })
   
       // Send a success response to the client
-      res.send({
+      res.status(200).json({
         message: 'User logged in successfully',
-        data: userDetails
+        data: user,
+        token: token
       })
     } catch (error) {
       // Send an error response if something went wrong while logging in
