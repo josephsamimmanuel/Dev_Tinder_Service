@@ -16,7 +16,10 @@ profileRouter.get('/profile/view', userAuth, async (req, res) => {
         return res.status(404).send('User not found')
       }
       // Send the user as a response to the client
-      res.send(user)
+      res.json({
+        message: 'User fetched successfully',
+        data: user
+      })
     } catch (error) {
       // Send an error response if something went wrong
       res.status(500).send('Error fetching user from database'+ error)
