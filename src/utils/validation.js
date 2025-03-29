@@ -21,10 +21,8 @@ const validateSignupData = (req) => {
 };
 
 const validateUpdateProfileData = (req) => {
-    console.log(req.body)
     const allowedFields = ['firstName', 'lastName', 'age', 'gender', 'photoUrl', 'about', 'skills']    
     const isEditAllowed = Object.keys(req.body).every(field => allowedFields.includes(field))
-    console.log(isEditAllowed)
     if(!isEditAllowed) {
         throw new Error('Invalid fields. Email and password cannot be editted')
     }

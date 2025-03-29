@@ -28,7 +28,6 @@ const USER_DATAS = ['firstName', 'lastName', 'photoUrl', 'age', 'gender']
 userRouter.get('/user/connections', userAuth, async (req, res) => {
   try {
     const user = req.user
-    console.log('user', user)
 
     // Get all the connections for the user
     const connections = await ConnectionRequestModel.find({ 
@@ -40,7 +39,6 @@ userRouter.get('/user/connections', userAuth, async (req, res) => {
       .populate('toUserId', USER_DATAS)
 
     const connectionList = connections.map(connection => {
-      console.log('connection', connection)
         return {
             // Display fromUserId or toUserId based on the user's id, if the userId is same as the fromUserId then display toUserId else display fromUserId
             response: connection.fromUserId._id.toString() === user._id.toString() ? connection.toUserId : connection.fromUserId,
@@ -91,7 +89,6 @@ userRouter.get('/user/feed', userAuth, async (req, res) => {
         ]
     }).select('fromUserId toUserId status')
 
-    console.log('connectionRequests', connectionRequests) // The ids of the users who have sent and received connection requests
 
     // FIND ALL USERS WHO ARE NOT THE LOGGED IN USER AND WHO ARE NOT IN THE CONNECTION REQUESTS
     const hideUsersFromFeed = new Set()
@@ -99,7 +96,6 @@ userRouter.get('/user/feed', userAuth, async (req, res) => {
         hideUsersFromFeed.add(request.fromUserId.toString())
         hideUsersFromFeed.add(request.toUserId.toString())
     })
-    console.log('hideUsersFromFeed', hideUsersFromFeed)
 
     const users = await User.find({
       $and: [
@@ -109,7 +105,6 @@ userRouter.get('/user/feed', userAuth, async (req, res) => {
     }).select(USER_DATAS)
     .skip((page - 1) * limit)
     .limit(limit)
-    console.log('users', users)
 
     res.status(200).json({
         message: 'Users fetched successfully',

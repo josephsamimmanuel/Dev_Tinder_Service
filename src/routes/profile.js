@@ -10,7 +10,6 @@ const profileRouter = express.Router()
 profileRouter.get('/profile/view', userAuth, async (req, res) => {
     try {
       const user = req.user
-      console.log('User:', user)
       // User not found
       if (!user) {
         return res.status(404).send('User not found')
@@ -29,17 +28,14 @@ profileRouter.get('/profile/view', userAuth, async (req, res) => {
   // Profile API - PUT/profile/update - update user profile
 profileRouter.patch('/profile/update', userAuth, async (req, res) => {
     try {
-      console.log('req.body', req.body)
       // Validate the request body
       if(!validateUpdateProfileData(req)) {
         return res.status(400).send('These fields are not allowed to be updated')
       }
       const user = req.user
-      console.log('User:', user)
       const { firstName, lastName, age, gender, photoUrl, about, skills } = req.body
       // Update the user profile
       const updatedUser = await User.findByIdAndUpdate(user._id, { firstName, lastName, age, gender, photoUrl, about, skills }, { new: true }, { runValidators: true })
-      console.log('updatedUser', updatedUser)
       if (!updatedUser) {
         return res.status(404).send('User not found')
       }

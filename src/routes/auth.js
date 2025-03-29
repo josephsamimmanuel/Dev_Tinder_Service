@@ -8,7 +8,6 @@ const authRouter = express.Router()
 
 // signup API - POST/signup - create a new user
 authRouter.post('/signup', async (req, res) => {
-    console.log('Request received', req.body)
   
     try {
       const { firstName, lastName, emailId, password, age, gender,skills, photoUrl, about } = req.body
@@ -18,7 +17,6 @@ authRouter.post('/signup', async (req, res) => {
   
       // ENCRYPT PASSWORD
       const passwordHash = await bcrypt.hash(password, 6)
-      console.log(passwordHash)
       req.body.password = passwordHash
   
       // CREATE INSTANCE OF USER MODEL
@@ -46,7 +44,6 @@ authRouter.post('/signup', async (req, res) => {
 
   // login API - POST/login - login user
 authRouter.post('/login', async (req, res) => {
-    console.log('Request received', req.body)
     try {
       const userDetails = req.user
       const { emailId, password } = req.body
@@ -58,11 +55,9 @@ authRouter.post('/login', async (req, res) => {
         return res.status(404).send('User not found')
       }
       // Compare the password
-      console.log('User:', user.password, 'Password:', password);
   
       // Validation added to user schema
       const isMatch = await user.validatePassword(password)
-      console.log('Is match:', isMatch);
   
       if (!isMatch) {
         return res.status(400).send('Invalid credentials')
@@ -70,7 +65,6 @@ authRouter.post('/login', async (req, res) => {
   
       // Create a JWT token
       const token = await user.getJWT()
-      console.log('Token:', token)
   
       // Add the token to cookies and send the response to the client
       res.cookie("token", token, {
@@ -92,7 +86,6 @@ authRouter.post('/login', async (req, res) => {
 
   // logout API - POST/logout - logout user
 authRouter.post('/logout', async (req, res) => {
-    console.log('Request received', req.body)
     res.clearCookie('token')
     res.json({
       message: 'User logged out successfully'

@@ -12,7 +12,6 @@ requestRouter.post('/request/send/:status/:userId', userAuth, async (req, res) =
     const fromUserId = req.user._id
     const toUserId = req.params.userId
     const status = req.params.status
-    console.log(req.user, status, toUserId)
 
     // Check if the user is trying to send a request to himself
     // if (fromUserId.toString() === toUserId.toString()) {
@@ -99,7 +98,6 @@ requestRouter.post('/request/review/:status/:requestId', userAuth, async (req, r
       toUserId: fromUserId,  // User 2 is the logged in user
       status: 'interested'
     })
-    console.log('connectionRequest', connectionRequest)
     if (!connectionRequest) {
       return res.status(400).json({
         message: 'Connection request not found'
