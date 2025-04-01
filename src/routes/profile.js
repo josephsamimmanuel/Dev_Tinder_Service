@@ -26,7 +26,7 @@ profileRouter.get('/profile/view', userAuth, async (req, res) => {
   });
 
   // Profile API - PUT/profile/update - update user profile
-profileRouter.patch('/profile/update', userAuth, async (req, res) => {
+profileRouter.patch('/profile/edit', userAuth, async (req, res) => {
     try {
       // Validate the request body
       if(!validateUpdateProfileData(req)) {

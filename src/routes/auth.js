@@ -10,8 +10,8 @@ const authRouter = express.Router()
 authRouter.post('/signup', async (req, res) => {
   
     try {
-      const { firstName, lastName, emailId, password, age, gender,skills, photoUrl, about } = req.body
-  
+      const { firstName, lastName, emailId, password } = req.body
+        
       // VALIDATION OF REQUEST BODY
       validateSignupData(req)
   
@@ -24,17 +24,23 @@ authRouter.post('/signup', async (req, res) => {
         firstName,
         lastName,
         emailId,
-        age,
-        gender,
-        skills,
-        photoUrl,
-        about,
         password: passwordHash,
       })
       // Save the user to the database
-      await user.save()
+      const savedUser = await user.save()
+      // Create a JWT token
+      const token = await savedUser.getJWT()
+      // Add the token to cookies
+      res.cookie("token", token, {
+        httpOnly: true,
+        maxAge: 3600000 // 1 hour in milliseconds
+      })
       // Send a success response to the client
-      res.send('User created successfully')
+      res.status(201).json({
+        message: 'User created successfully',
+        data: savedUser
+      })
+
     } catch (error) {
       // Send an error response if something
       // went wrong while creating the user
