@@ -1,53 +1,36 @@
-// Creating a server
-const express = require('express');
+const express = require('express')  // npm install express
+const connectDB = require('./config/database')
+const app = express()
+const cookieParser = require('cookie-parser') // npm install cookie-parser
+require('dotenv').config()
+const cors = require('cors')
 
-const app = express();
+app.use(cors({
+  origin: 'http://localhost:5173',
+  credentials: true,
+}))
 
-// get - will match only the GET HTTP method API calls to the path
-app.get('/user',(req, res) => {
-  res.send('User Profile Data');
+// To parse the incoming requests with JSON payloads
+app.use(express.json())
+
+// To parse the incoming requests with urlencoded payloads
+app.use(cookieParser())
+
+const authRouter = require('./routes/auth')
+const profileRoutes = require('./routes/profile')
+const requestRoutes = require('./routes/requests')
+const userRouter = require('./routes/user')
+app.use('/', authRouter)
+app.use('/', profileRoutes)
+app.use('/', requestRoutes)
+app.use('/', userRouter)
+
+connectDB().then(() => {
+  console.log('Connected to MongoDB');
+    app.listen(process.env.PORT, () => {
+    console.log(`Server is listening on ${process.env.PORT}...`)
+  })
+}).catch((err) => {
+  console.error('Error connecting to MongoDB: ', err);
 });
 
-app.post('/user',(req, res) => {
-  console.log('Save Data to the Database');
-  res.send('User Profile Data Saved');
-});
-
-app.delete('/user',(req, res) => {
-  res.send('User Profile Data Deleted');
-});
-
-// use - will match all the HTTP method API calls to the path
-app.use('/hello/2',(req, res) => {
-  res.send('AbrakaDabra');
-});   // AbrakaDabra
-
-app.use('/hello',(req, res) => {
-  res.send('Hello World Hello World Hello World');
-});
-
-app.use('/hello/2',(req, res) => {
-  res.send('AbrakaDabra');
-});     // Hello World
-
-
-app.use('/test1',(req, res) => {
-  res.send('Hello World1');
-});
-
-app.use('/test2',(req, res) => {
-  res.send('Hello World2');
-});
-
-
-app.use('/test3',(req, res) => {
-  res.send('Joseph');
-});
-
-// app.use('/',(req, res) => {
-//   res.send('Bye World');
-// }); // /xyz - Bye World
-
-app.listen(7777, () => {
-  console.log('Server is listening on 3000');
-});
