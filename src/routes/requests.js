@@ -2,6 +2,7 @@ const express = require('express')
 const { userAuth } = require('../middleware/auth')
 const ConnectionRequestModel = require('../models/connectionRequest')
 const User = require('../models/user')
+const sendEmail = require('../utils/sendEmail')
 
 const requestRouter = express.Router()
 
@@ -12,6 +13,8 @@ requestRouter.post('/request/send/:status/:userId', userAuth, async (req, res) =
     const fromUserId = req.user._id
     const toUserId = req.params.userId
     const status = req.params.status
+
+    console.log('fromUserId', fromUserId)
 
     // Check if the user is trying to send a request to himself
     // if (fromUserId.toString() === toUserId.toString()) {
@@ -51,12 +54,22 @@ requestRouter.post('/request/send/:status/:userId', userAuth, async (req, res) =
       })
     }
 
+    // Check if the fromUserId is a valid user
+    const fromUser = await User.findById(fromUserId)
+    if (!fromUser) {
+      return res.status(400).json({
+        message: 'Invalid user id'
+      })
+    }
+
     const connectionRequest = await ConnectionRequestModel.create({
       fromUserId,
       toUserId,
       status,
     })
     const data = await connectionRequest.save()
+    const emailResponse = await sendEmail.run( fromUser.firstName + ' send ' + status + ' request to ' + toUser.firstName)
+    console.log('emailResponse', emailResponse)
     res.status(201).json({
       message: 'You send ' + status + ' request to ' + toUser.firstName,
       connectionRequest: data

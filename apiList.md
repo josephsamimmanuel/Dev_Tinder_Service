@@ -30,3 +30,4 @@ CONNECTION REQUEST ROUTER:
 FRONTEND: http://13.61.10.218/
 BACKEND: http://13.61.10.218:7777/
 DEV LINK: http://13.61.10.218/
+DOMAIN NAME: https://devtinder.services/
