@@ -16,6 +16,17 @@ app.use(express.json())
 // To parse the incoming requests with urlencoded payloads
 app.use(cookieParser())
 
+// Configure cookie settings based on environment
+app.use((req, res, next) => {
+  res.cookie('token', req.cookies.token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  });
+  next();
+});
+
 const authRouter = require('./routes/auth')
 const profileRoutes = require('./routes/profile')
 const requestRoutes = require('./routes/requests')

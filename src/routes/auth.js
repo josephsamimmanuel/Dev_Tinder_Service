@@ -2,7 +2,6 @@ const express = require('express');
 const User = require('../models/user');
 const { validateSignupData } = require('../utils/validation');
 const bcrypt = require('bcrypt');
-const { userAuth } = require('../middleware/auth');
 
 const authRouter = express.Router()
 
@@ -33,7 +32,9 @@ authRouter.post('/signup', async (req, res) => {
       // Add the token to cookies
       res.cookie("token", token, {
         httpOnly: true,
-        maxAge: 3600000 // 1 hour in milliseconds
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        maxAge: 24 * 60 * 60 * 1000 // 24 hours
       })
       // Send a success response to the client
       res.status(201).json({
@@ -51,7 +52,6 @@ authRouter.post('/signup', async (req, res) => {
   // login API - POST/login - login user
 authRouter.post('/login', async (req, res) => {
     try {
-      const userDetails = req.user
       const { emailId, password } = req.body
   
       //CREATE INSTANCE OF USER MODEL
