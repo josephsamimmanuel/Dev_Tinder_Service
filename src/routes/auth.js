@@ -82,7 +82,9 @@ authRouter.post('/login', async (req, res) => {
         httpOnly: true,
         secure: true,
         sameSite: 'none',
-        maxAge: 3600000 // 1 hour in milliseconds
+        maxAge: 3600000, // 1 hour in milliseconds
+        path: '/',
+        domain: '.onrender.com'  // Add the domain
       };
       
       console.log('Setting cookie with options:', cookieOptions);
