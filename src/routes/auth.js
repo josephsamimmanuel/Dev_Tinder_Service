@@ -52,10 +52,15 @@ authRouter.post('/login', async (req, res) => {
     try {
       const { emailId, password } = req.body
   
+      console.log('Login attempt for:', emailId);
+      console.log('Request origin:', req.headers.origin);
+      console.log('Request headers:', req.headers);
+  
       //CREATE INSTANCE OF USER MODEL
       const user = await User
         .findOne({ emailId })
       if (!user) {
+        console.log('User not found:', emailId);
         return res.status(404).send('User not found')
       }
       // Compare the password
@@ -64,20 +69,29 @@ authRouter.post('/login', async (req, res) => {
       const isMatch = await user.validatePassword(password)
   
       if (!isMatch) {
+        console.log('Invalid password for user:', emailId);
         return res.status(400).send('Invalid credentials')
       }
   
       // Create a JWT token
       const token = await user.getJWT()
+      console.log('Token generated:', token);
 
-      console.log(token)
-  
       // Add the token to cookies and send the response to the client
-      res.cookie("token", token, {
+      const cookieOptions = {
         httpOnly: true,
+        secure: true,
+        sameSite: 'none',
         maxAge: 3600000 // 1 hour in milliseconds
-      })
-  
+      };
+      
+      console.log('Setting cookie with options:', cookieOptions);
+      res.cookie("token", token, cookieOptions);
+      console.log('Cookie set with token');
+
+      // Log response headers
+      console.log('Response headers:', res.getHeaders());
+
       // Send a success response to the client
       res.status(200).json({
         message: 'User logged in successfully',
@@ -85,6 +99,8 @@ authRouter.post('/login', async (req, res) => {
         token: token
       })
     } catch (error) {
+      console.error('Login error:', error);
+      console.error('Error stack:', error.stack);
       // Send an error response if something went wrong while logging in
       res.status(400).send('Error logging in user')
     }
