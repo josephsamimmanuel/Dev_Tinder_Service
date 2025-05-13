@@ -7,12 +7,14 @@ const userAuth = async (req, res, next) => {
   try {
     // Read the token from the request cookies
     const { token } = req.cookies
+    console.log(token)
     // Check if the token is present
     if (!token) {
       return res.status(401).send('Unauthorized')
     }
     // Verify the token
     const isVerified = jwt.verify(token, SECRET_jwt)
+    console.log(isVerified)
     // Check if the token is verified
     if (!isVerified) {
       return res.status(401).send('Unauthorized')

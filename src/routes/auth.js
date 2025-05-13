@@ -69,6 +69,8 @@ authRouter.post('/login', async (req, res) => {
   
       // Create a JWT token
       const token = await user.getJWT()
+
+      console.log(token)
   
       // Add the token to cookies and send the response to the client
       res.cookie("token", token, {

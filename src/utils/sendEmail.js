@@ -1,7 +1,7 @@
 const { SendEmailCommand } = require("@aws-sdk/client-ses");
 const { sesClient } = require("./sesClient");
 
-const createSendEmailCommand = (toAddress, fromAddress, message) => {
+const createSendEmailCommand = (toAddress, fromAddress, subject, message) => {
   return new SendEmailCommand({
     Destination: {
       /* required */
@@ -19,16 +19,16 @@ const createSendEmailCommand = (toAddress, fromAddress, message) => {
         /* required */
         Html: {
           Charset: "UTF-8",
-          Data: "<h1>New Connection Request</h1><p>" + message + "</p>",
+          Data: `<h1>${subject}</h1><p>${message}</p>`,
         },
         Text: {
           Charset: "UTF-8",
-          Data: "New Connection Request\n\n" + message + "\n\n",
+          Data: `${subject}\n\n${message}\n\n`,
         },
       },
       Subject: {
         Charset: "UTF-8",
-        Data: "New Connection Request from Dev Tinder",
+        Data: subject,
       },
     },
     Source: fromAddress,
@@ -38,22 +38,25 @@ const createSendEmailCommand = (toAddress, fromAddress, message) => {
   });
 };
 
-const run = async (message) => {
+const run = async (subject, message) => {
+  if (!process.env.AWS_SES_TO_ADDRESS || !process.env.AWS_SES_FROM_ADDRESS) {
+    throw new Error('AWS SES email addresses not configured in environment variables');
+  }
+
   const sendEmailCommand = createSendEmailCommand(
     process.env.AWS_SES_TO_ADDRESS,
     process.env.AWS_SES_FROM_ADDRESS,
-    message,
+    subject,
+    message
   );
 
   try {
-    return await sesClient.send(sendEmailCommand);
-  } catch (caught) {
-    if (caught instanceof Error && caught.name === "MessageRejected") {
-      /** @type { import('@aws-sdk/client-ses').MessageRejected} */
-      const messageRejectedError = caught;
-      return messageRejectedError;
-    }
-    throw caught;
+    const result = await sesClient.send(sendEmailCommand);
+    console.log('Email sent successfully:', result.MessageId);
+    return result;
+  } catch (error) {
+    console.error('Failed to send email:', error.message);
+    throw error;
   }
 };
 
