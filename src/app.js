@@ -4,10 +4,16 @@ const app = express()
 const cookieParser = require('cookie-parser') // npm install cookie-parser
 require('dotenv').config()
 const cors = require('cors')
+require('./utils/cronjob')
+
+const http = require('http')
 
 app.use(cors({
   origin: ['http://localhost:5173', 'https://devtindercricketapp.netlify.app'],
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  exposedHeaders: ['set-cookie']
 }))
 
 // To parse the incoming requests with JSON payloads
@@ -20,17 +26,21 @@ const authRouter = require('./routes/auth')
 const profileRoutes = require('./routes/profile')
 const requestRoutes = require('./routes/requests')
 const userRouter = require('./routes/user')
+const initializeSocket = require('./utils/socket')
+
 app.use('/', authRouter)
 app.use('/', profileRoutes)
 app.use('/', requestRoutes)
 app.use('/', userRouter)
 
+const server = http.createServer(app)
+initializeSocket(server)
+
 connectDB().then(() => {
   console.log('Connected to MongoDB');
-    app.listen(process.env.PORT, () => {
+    server.listen(process.env.PORT, () => {
     console.log(`Server is listening on ${process.env.PORT}...`)
   })
 }).catch((err) => {
   console.error('Error connecting to MongoDB: ', err);
 });
-
